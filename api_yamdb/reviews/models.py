@@ -130,7 +130,7 @@ class Reviews(models.Model):
         verbose_name_plural = 'Отзывы'
 
 
-class Comment(models.Model):
+"""class Comment(models.Model):
     title_id = models.ForeignKey(
         unique=True,
         null=False,
@@ -148,4 +148,4 @@ class Comment(models.Model):
 
     class Meta:
         verbose_name = 'Комментарий'
-        verbose_name_plural = 'Комментарии'
+        verbose_name_plural = 'Комментарии'"""
