@@ -99,23 +99,14 @@ class GenreTitle(models.Model):
 
 
 class Reviews(models.Model):
-    title_id = models.SlugField(
-        max_length=200,
-        unique=True,
-        null=False,
-        verbose_name='ID title'
+    title = models.ForeignKey(
+        Title,
+        related_name='reviews',
+        on_delete=models.CASCADE
     )
     text = models.TextField(
         verbose_name='Текст отзыва'
     )
-    score = models.IntegerField(
-        max_length=2,
-        choices=DEFAULT_CHOICES,
-        verbose_name='title score'
-    )
-    # Или юзать скор верхний, если вы одобрите, или нижний, для целочисленного
-    # вывода,
-    # если я правильно разобрался в документации по django лучше юзать нижний
 
     class Score(models.IntegerChoices):
         one = 1
@@ -136,22 +127,26 @@ class Reviews(models.Model):
         verbose_name_plural = 'Отзывы'
 
 
-"""class Comment(models.Model):
-    title_id = models.ForeignKey(
-        unique=True,
-        null=False,
-        verbose_name='ID title'
+class Comments(models.Model):
+    review = models.ForeignKey(
+        Reviews,
+        related_name='comments',
+        on_delete=models.CASCADE
     )
-    text = models.TextField(
-        verbose_name='Текст комментария',
-        help_text='Текст комментария',
+    text = models.TextField()
+    author = models.ForeignKey(
+        User,
+        on_delete=models.CASCADE,
+        related_name='comments'
     )
-    review_id = models.ForeignKey(
-        unique=True,
-        null=False,
-        verbose_name='ID review'
-    )
+    pub_date = models.DateTimeField('Дата комментария',
+                                    auto_now_add=True)
 
     class Meta:
+        ordering = ('-pub_date',)
         verbose_name = 'Комментарий'
-        verbose_name_plural = 'Комментарии'"""
+        verbose_name_plural = 'Комментарии'
+
+# Не отказался бы от критики моделей
+# по тз должна быть система рейтинга, допилю её завтра,
+# думаю в ваших моделях/или в целом ваших задачах она не будет юзаться
