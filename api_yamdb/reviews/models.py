@@ -68,9 +68,7 @@ class Title(models.Model):
     )
     genre = models.ManyToManyField(
         Genre,
-        blank=True,
-        null=True,
-        on_delete=models.SET_NULL,
+        through='GenreTitle',
         related_name='title_genre',
         verbose_name='Жанр произведения'
     )
@@ -90,6 +88,14 @@ class Title(models.Model):
 
     def __str__(self):
         return self.name
+
+
+class GenreTitle(models.Model):
+    genre = models.ForeignKey(Genre, on_delete=models.CASCADE)
+    title = models.ForeignKey(Title, on_delete=models.CASCADE)
+
+    def __str__(self):
+        return f'{self.genre} {self.title}'
 
 
 class Reviews(models.Model):
