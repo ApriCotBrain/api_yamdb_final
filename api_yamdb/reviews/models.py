@@ -18,7 +18,7 @@ DEFAULT_CHOICES = (
 
 
 class Category(models.Model):
-    name = models.TextField(max_length=256, verbose_name='Название категории')
+    name = models.CharField(max_length=256, verbose_name='Название категории')
     slug = models.SlugField(
         max_length=50,
         unique=True,
@@ -26,15 +26,15 @@ class Category(models.Model):
     )
 
     class Meta:
-        verbose_name = 'category'
-        verbose_name_plural = 'categories'
+        verbose_name = 'Категория'
+        verbose_name_plural = 'Категории'
 
     def __str__(self):
         return self.name
 
 
 class Genre(models.Model):
-    name = models.TextField(max_length=256, verbose_name='Название жанра')
+    name = models.CharField(max_length=256, verbose_name='Название жанра')
     slug = models.SlugField(
         max_length=50,
         unique=True,
@@ -42,15 +42,15 @@ class Genre(models.Model):
     )
 
     class Meta:
-        verbose_name = 'genre'
-        verbose_name_plural = 'genres'
+        verbose_name = 'Жанр'
+        verbose_name_plural = 'Жанры'
 
     def __str__(self):
         return self.name
 
 
 class Title(models.Model):
-    name = models.TextField(
+    name = models.CharField(
         max_length=256,
         verbose_name='Название произведения'
     )
@@ -66,11 +66,9 @@ class Title(models.Model):
         related_name='title_category',
         verbose_name='Категория произведения'
     )
-    genre = models.ForeignKey(
+    genre = models.ManyToManyField(
         Genre,
-        blank=True,
-        null=True,
-        on_delete=models.SET_NULL,
+        through='GenreTitle',
         related_name='title_genre',
         verbose_name='Жанр произведения'
     )
@@ -81,8 +79,8 @@ class Title(models.Model):
     )
 
     class Meta:
-        verbose_name = 'title'
-        verbose_name_plural = 'titles'
+        verbose_name = 'Произведение'
+        verbose_name_plural = 'Произведения'
         constraints = [
             models.UniqueConstraint(fields=['name', 'category'],
                                     name='unique_title_category')
@@ -90,6 +88,14 @@ class Title(models.Model):
 
     def __str__(self):
         return self.name
+
+
+class GenreTitle(models.Model):
+    genre = models.ForeignKey(Genre, on_delete=models.CASCADE)
+    title = models.ForeignKey(Title, on_delete=models.CASCADE)
+
+    def __str__(self):
+        return f'{self.genre} {self.title}'
 
 
 class Reviews(models.Model):
