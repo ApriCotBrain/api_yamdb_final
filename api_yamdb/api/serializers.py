@@ -6,7 +6,7 @@ from rest_framework import serializers
 from rest_framework.validators import UniqueTogetherValidator
 from rest_framework.relations import SlugRelatedField
 
-from reviews.models import Category, Genre, Title, Reviews, Comments
+from reviews.models import Category, Genre, Title, Review, Comment
 
 
 class TitleSerializer(serializers.ModelSerializer):
@@ -40,12 +40,12 @@ class GenreSerializer(serializers.ModelSerializer):
         model = Genre
 
 
-class ReviewSerializers(serializers.ModelSerializer):
+class ReviewSerializer(serializers.ModelSerializer):
     author = SlugRelatedField(slug_field='username', read_only=True)
 
     class Meta:
         fields = '__all__'
-        model = Reviews
+        model = Review
         read_only_fields = ('title',)
 
     def validate(self, data):
@@ -65,13 +65,16 @@ class ReviewSerializers(serializers.ModelSerializer):
         return value
 
 
-class CommentSerializers(serializers.ModelSerializer):
+class CommentSerializer(serializers.ModelSerializer):
     author = SlugRelatedField(
         read_only=True, slug_field='username'
+    )
+    review = SlugRelatedField(
+        slug_field='text',
+        read_only=True
     )
 
     class Meta:
         fields = '__all__'
-        model = Comments
+        model = Comment
         read_only_fields = ('review',)
-
