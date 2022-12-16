@@ -11,7 +11,7 @@ from api.serializers import (
     ReviewSerializers,
     CommentSerializers
 )
-from reviews.models import Genre, Category, Title, Reviews, Comment
+from reviews.models import Genre, Category, Title, Reviews, Comments
 
 
 class TitleViewSet(viewsets.ModelViewSet):
@@ -47,33 +47,27 @@ class GenreViewSet(mixins.CreateModelMixin,
     search_fields = ('name',)
 
 
-class ReviewsViewSet(mixins.CreateModelMixin,
-                     mixins.RetrieveModelMixin,
-                     mixins.ListModelMixin,
-                     mixins.UpdateModelMixin,
-                     mixins.DestroyModelMixin,
-                     viewsets.GenericViewSet):
-    queryset = Reviews.objects.all()
+class ReviewsViewSet(viewsets.ModelViewSet):
     serializer_class = ReviewSerializers
+    permission_classes = [IsAdminUser]
 
-    def get_title(self):
-        return get_object_or_404(Title, pk=self.kwargs.get('title_id'))
+    def get_queryset(self):
+        title = get_object_or_404(Title, id=self.kwargs.get('title_id'))
+        return title.reviews.all()
+
+    def perform_create(self, serializer):
+        title = get_object_or_404(Title, id=self.kwargs.get('title_id'))
+        serializer.save(author=self.request.user, title=title)
 
 
-class CommentViewSet(mixins.CreateModelMixin,
-                     mixins.RetrieveModelMixin,
-                     mixins.ListModelMixin,
-                     mixins.UpdateModelMixin,
-                     mixins.DestroyModelMixin,
-                     viewsets.GenericViewSet):
+class CommentViewSet(viewsets.ModelViewSet):
     serializer_class = CommentSerializers
-    queryset = Comment.objects.all()
+    permission_classes = [IsAdminUser]
 
-    def get_reviews(self):
-        return get_object_or_404(Reviews, pk=self.kwargs.get('reviews_id'))
+    def get_queryset(self):
+        review = get_object_or_404(Reviews, id=self.kwargs.get('review_id'))
+        return review.comments.all()
 
-# вьюхи пока накидал такие, если вы не против, послезавтра у меня фулл
-# ночь и день свободны будут, переделаю, поищу ещё в документации, по
-# mixins есть предположение что я слишком много их указал, по сути все))
-# но по логике как раз все они и нужны, возможно ошибаюсь, тоже с радостью
-# услышал вашу точку зрения по поводу mixinов
+    def perform_create(self, serializer):
+        review = get_object_or_404(Reviews, id=self.kwargs.get('review_id'))
+        serializer.save(author=self.request.user, review=review)

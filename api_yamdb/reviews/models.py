@@ -1,20 +1,8 @@
 from django.contrib.auth import get_user_model
+from django.core.validators import MaxValueValidator, MinValueValidator
 from django.db import models
 
 User = get_user_model()
-DEFAULT_CHOICES = (
-    ('10', '10'),
-    ('9', '9'),
-    ('8', '8'),
-    ('7', '7'),
-    ('6', '6'),
-    ('5', '5'),
-    ('4', '4'),
-    ('3', '3'),
-    ('2', '2'),
-    ('1', '1'),
-    ('0', '0')
-)
 
 
 class Category(models.Model):
@@ -76,6 +64,7 @@ class Title(models.Model):
         null=True,
         verbose_name='Год произведения'
     )
+    rating = models.IntegerField(default=0, null=True, blank=True)
 
     class Meta:
         verbose_name = 'Произведение'
@@ -109,27 +98,25 @@ class Reviews(models.Model):
         related_name='reviews',
         on_delete=models.CASCADE
     )
-    text = models.TextField(
-        verbose_name='Текст отзыва'
+    text = models.TextField("Текст", help_text="Отзыв")
+    author = models.ForeignKey(
+        User,
+        on_delete=models.CASCADE,
+        related_name="reviews",
+        verbose_name="Автор",
     )
+    score = models.SmallIntegerField(
+        verbose_name="Оценка",
+        validators=[MinValueValidator(1), MaxValueValidator(10)],
+    )
+    pub_date = models.DateTimeField("Дата публикации", auto_now_add=True)
 
-    class Score(models.IntegerChoices):
-        one = 1
-        two = 2
-        three = 3
-        four = 4
-        five = 5
-        six = 6
-        seven = 7
-        eight = 8
-        nine = 9
-        ten = 10
-
-    score = models.IntegerField(choices=Score.choices)
 
     class Meta:
+        ordering = ["-pub_date"]
         verbose_name = 'Отзыв'
         verbose_name_plural = 'Отзывы'
+        unique_together = ('title', 'author',)
 
 
 class Comments(models.Model):
@@ -138,7 +125,7 @@ class Comments(models.Model):
         related_name='comments',
         on_delete=models.CASCADE
     )
-    text = models.TextField()
+    text = models.TextField("Текст", help_text="Комментарий")
     author = models.ForeignKey(
         User,
         on_delete=models.CASCADE,
@@ -152,6 +139,6 @@ class Comments(models.Model):
         verbose_name = 'Комментарий'
         verbose_name_plural = 'Комментарии'
 
-# Не отказался бы от критики моделей
-# по тз должна быть система рейтинга, допилю её завтра,
-# думаю в ваших моделях/или в целом ваших задачах она не будет юзаться
+    def __str__(self):
+        return self.text
+
