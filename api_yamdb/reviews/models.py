@@ -2,6 +2,7 @@ from django.contrib.auth import get_user_model
 from django.core.validators import MaxValueValidator, MinValueValidator
 from django.db import models
 
+
 User = get_user_model()
 
 
@@ -64,7 +65,6 @@ class Title(models.Model):
         null=True,
         verbose_name='Год произведения'
     )
-    rating = models.IntegerField(default=0, null=True, blank=True)
 
     class Meta:
         verbose_name = 'Произведение'
@@ -93,10 +93,11 @@ class GenreTitle(models.Model):
 
 
 class Reviews(models.Model):
-    title = models.ForeignKey(
+    title_id = models.ForeignKey(
         Title,
         related_name='reviews',
-        on_delete=models.CASCADE
+        on_delete=models.CASCADE,
+        db_column='title_id',
     )
     text = models.TextField("Текст", help_text="Отзыв")
     author = models.ForeignKey(
@@ -111,19 +112,19 @@ class Reviews(models.Model):
     )
     pub_date = models.DateTimeField("Дата публикации", auto_now_add=True)
 
-
     class Meta:
         ordering = ["-pub_date"]
         verbose_name = 'Отзыв'
         verbose_name_plural = 'Отзывы'
-        unique_together = ('title', 'author',)
+        unique_together = ('title_id', 'author',)
 
 
 class Comments(models.Model):
-    review = models.ForeignKey(
+    review_id = models.ForeignKey(
         Reviews,
         related_name='comments',
-        on_delete=models.CASCADE
+        on_delete=models.CASCADE,
+        db_column='review_id',
     )
     text = models.TextField("Текст", help_text="Комментарий")
     author = models.ForeignKey(
@@ -141,4 +142,3 @@ class Comments(models.Model):
 
     def __str__(self):
         return self.text
-
