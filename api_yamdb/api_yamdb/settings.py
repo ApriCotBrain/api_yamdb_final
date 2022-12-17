@@ -1,4 +1,5 @@
 from pathlib import Path
+from django.conf.global_settings import DATETIME_INPUT_FORMATS
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
@@ -88,7 +89,7 @@ AUTH_PASSWORD_VALIDATORS = [
 
 # Internationalization
 
-LANGUAGE_CODE = 'ru-RU'
+LANGUAGE_CODE = 'en-us'
 
 TIME_ZONE = 'UTC'
 
@@ -106,3 +107,6 @@ STATIC_URL = '/static/'
 STATICFILES_DIRS = ((BASE_DIR / 'static/'),)
 
 AUTH_USER_MODEL = 'users.User'
+
+DATETIME_INPUT_FORMATS += ('%Y-%m-%dT%H:%M:%S.567z', )
+DATETIME_INPUT_FORMATS += ('%Y-%m-%dT%H:%M:%S.422z', )

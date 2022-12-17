@@ -2,6 +2,7 @@ from django.contrib.auth import get_user_model
 from django.core.validators import MaxValueValidator, MinValueValidator
 from django.db import models
 
+
 User = get_user_model()
 
 
@@ -96,11 +97,13 @@ class GenreTitle(models.Model):
         return f'{self.genre_id} {self.title_id}'
 
 
+
 class Review(models.Model):
     title = models.ForeignKey(
         Title,
         related_name='reviews',
-        on_delete=models.CASCADE
+        on_delete=models.CASCADE,
+        db_column='title_id',
     )
     text = models.TextField("Текст", help_text="Отзыв")
     author = models.ForeignKey(
@@ -122,6 +125,10 @@ class Review(models.Model):
         ordering = ["-pub_date"]
         verbose_name = 'Отзыв'
         verbose_name_plural = 'Отзывы'
+
+class Comments(models.Model):
+    review_id = models.ForeignKey(
+        Reviews,
         constraints = [
             models.UniqueConstraint(
                 fields=['title', 'author'],
@@ -134,7 +141,8 @@ class Comment(models.Model):
     review = models.ForeignKey(
         Review,
         related_name='comments',
-        on_delete=models.CASCADE
+        on_delete=models.CASCADE,
+        db_column='review_id',
     )
     text = models.TextField("Текст", help_text="Комментарий")
     author = models.ForeignKey(
