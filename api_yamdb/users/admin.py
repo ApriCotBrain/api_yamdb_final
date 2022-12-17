@@ -27,5 +27,3 @@ class UserAdmin(ImportExportModelAdmin):
         'email'
     )
 
-
-
