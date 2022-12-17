@@ -15,14 +15,14 @@ class User(AbstractUser):
     username = models.CharField(
         max_length=150,
         unique=True,
+        db_index=True
     )
     email = models.EmailField(
         max_length=254,
-        verbose_name='Email',
         unique=True
     )
     bio = models.TextField(
-        verbose_name='О пользователе',
+        'О пользователе',
         blank=True,
         null=True
     )
@@ -31,6 +31,13 @@ class User(AbstractUser):
         max_length=20,
         choices=USER_ROLES,
         default=USER,
-        blank=True,
+        blank=False    # Возможно тут True, надо проверить с api
     )
     # conf_code?
+
+    class Meta:
+        verbose_name = 'Пользователь'
+        verbose_name_plural = 'Пользователи'
+
+    def __str__(self):
+        return self.username
