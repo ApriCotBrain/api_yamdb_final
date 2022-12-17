@@ -4,11 +4,11 @@ from import_export.admin import ImportExportModelAdmin
 
 from reviews.models import (
     Category,
-    Comments,
+    Comment,
     Genre,
     GenreTitle,
     Title,
-    Reviews
+    Review
     )
 
 class CategoryResource(resources.ModelResource):
@@ -91,7 +91,7 @@ class GenreTitleAdmin(ImportExportModelAdmin):
 
 class ReviewsResource(resources.ModelResource):
     class Meta:
-        model = Reviews
+        model = Review
         fields = (
             'id',
             'title_id',
@@ -102,7 +102,7 @@ class ReviewsResource(resources.ModelResource):
         )
 
 
-@admin.register(Reviews)
+@admin.register(Review)
 class ReviewsAdmin(ImportExportModelAdmin):
     resource_classes = [ReviewsResource]
     list_display = (
@@ -115,7 +115,7 @@ class ReviewsAdmin(ImportExportModelAdmin):
 
 class CommentsResource(resources.ModelResource):
     class Meta:
-        model = Comments
+        model = Comment
         fields = (
             'id',
             'review_id',
@@ -125,7 +125,7 @@ class CommentsResource(resources.ModelResource):
         )
 
 
-@admin.register(Comments)
+@admin.register(Comment)
 class CommentsAdmin(ImportExportModelAdmin):
     resource_classes = [CommentsResource]
     list_display = (
