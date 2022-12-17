@@ -3,7 +3,7 @@ from import_export import resources
 from import_export.admin import ImportExportModelAdmin
 
 from reviews.models import Category, Genre, Title
-
+from_encoding = "utf-8"
 
 class CategoryResource(resources.ModelResource):
     class Meta:
