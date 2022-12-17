@@ -97,7 +97,6 @@ class GenreTitle(models.Model):
         return f'{self.genre_id} {self.title_id}'
 
 
-
 class Review(models.Model):
     title = models.ForeignKey(
         Title,
