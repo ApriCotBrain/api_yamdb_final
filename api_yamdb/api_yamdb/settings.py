@@ -1,5 +1,7 @@
 from pathlib import Path
 from datetime import timedelta
+from django.conf.global_settings import DATETIME_INPUT_FORMATS
+
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
@@ -151,3 +153,6 @@ SIMPLE_JWT = {
     'SLIDING_TOKEN_LIFETIME': timedelta(minutes=5),
     'SLIDING_TOKEN_REFRESH_LIFETIME': timedelta(days=1),
 }
+
+DATETIME_INPUT_FORMATS += ('%Y-%m-%dT%H:%M:%S.567z', )
+DATETIME_INPUT_FORMATS += ('%Y-%m-%dT%H:%M:%S.422z', )

@@ -1,20 +1,9 @@
 from django.contrib.auth import get_user_model
+from django.core.validators import MaxValueValidator, MinValueValidator
 from django.db import models
 
+
 User = get_user_model()
-DEFAULT_CHOICES = (
-    ('10', '10'),
-    ('9', '9'),
-    ('8', '8'),
-    ('7', '7'),
-    ('6', '6'),
-    ('5', '5'),
-    ('4', '4'),
-    ('3', '3'),
-    ('2', '2'),
-    ('1', '1'),
-    ('0', '0')
-)
 
 
 class Category(models.Model):
@@ -69,13 +58,17 @@ class Title(models.Model):
     genre = models.ManyToManyField(
         Genre,
         through='GenreTitle',
-        related_name='title_genre',
         verbose_name='Жанр произведения'
     )
     year = models.IntegerField(
         blank=True,
         null=True,
         verbose_name='Год произведения'
+    )
+    rating = models.IntegerField(
+        verbose_name='Рейтинг',
+        null=True,
+        default=None
     )
 
     class Meta:
@@ -91,67 +84,79 @@ class Title(models.Model):
 
 
 class GenreTitle(models.Model):
-    genre = models.ForeignKey(Genre, on_delete=models.CASCADE)
-    title = models.ForeignKey(Title, on_delete=models.CASCADE)
+    genre_id = models.ForeignKey(
+        Genre,
+        on_delete=models.CASCADE,
+        db_column='genre_id')
+    title_id = models.ForeignKey(
+        Title,
+        on_delete=models.CASCADE,
+        db_column='title_id')
 
     def __str__(self):
-        return f'{self.genre} {self.title}'
+        return f'{self.genre_id} {self.title_id}'
 
 
-class Reviews(models.Model):
-    title_id = models.SlugField(
-        max_length=200,
-        unique=True,
-        null=False,
-        verbose_name='ID title'
+
+class Review(models.Model):
+    title = models.ForeignKey(
+        Title,
+        related_name='reviews',
+        on_delete=models.CASCADE,
+        db_column='title_id',
     )
-    text = models.TextField(
-        verbose_name='Текст отзыва'
+    text = models.TextField("Текст", help_text="Отзыв")
+    author = models.ForeignKey(
+        User,
+        on_delete=models.CASCADE,
+        related_name="reviews",
+        verbose_name="Автор",
     )
-    score = models.IntegerField(
-        max_length=2,
-        choices=DEFAULT_CHOICES,
-        verbose_name='title score'
+    score = models.PositiveSmallIntegerField(
+        verbose_name='Рейтинг',
+        validators=[
+            MinValueValidator(1, 'Допустимы значения от 1 до 10'),
+            MaxValueValidator(10, 'Допустимы значения от 1 до 10')
+        ]
     )
-    # Или юзать скор верхний, если вы одобрите, или нижний, для целочисленного
-    # вывода,
-    # если я правильно разобрался в документации по django лучше юзать нижний
-
-    class Score(models.IntegerChoices):
-        one = 1
-        two = 2
-        three = 3
-        four = 4
-        five = 5
-        six = 6
-        seven = 7
-        eight = 8
-        nine = 9
-        ten = 10
-
-    score = models.IntegerField(choices=Score.choices)
+    pub_date = models.DateTimeField("Дата публикации", auto_now_add=True)
 
     class Meta:
+        ordering = ["-pub_date"]
         verbose_name = 'Отзыв'
         verbose_name_plural = 'Отзывы'
 
-
-"""class Comment(models.Model):
-    title_id = models.ForeignKey(
-        unique=True,
-        null=False,
-        verbose_name='ID title'
-    )
-    text = models.TextField(
-        verbose_name='Текст комментария',
-        help_text='Текст комментария',
-    )
+class Comments(models.Model):
     review_id = models.ForeignKey(
-        unique=True,
-        null=False,
-        verbose_name='ID review'
+        Reviews,
+        constraints = [
+            models.UniqueConstraint(
+                fields=['title', 'author'],
+                name='unique_review'
+            ),
+        ]
+
+
+class Comment(models.Model):
+    review = models.ForeignKey(
+        Review,
+        related_name='comments',
+        on_delete=models.CASCADE,
+        db_column='review_id',
     )
+    text = models.TextField("Текст", help_text="Комментарий")
+    author = models.ForeignKey(
+        User,
+        on_delete=models.CASCADE,
+        related_name='comments'
+    )
+    pub_date = models.DateTimeField('Дата комментария',
+                                    auto_now_add=True)
 
     class Meta:
+        ordering = ('-pub_date',)
         verbose_name = 'Комментарий'
-        verbose_name_plural = 'Комментарии'"""
+        verbose_name_plural = 'Комментарии'
+
+    def __str__(self):
+        return self.text
