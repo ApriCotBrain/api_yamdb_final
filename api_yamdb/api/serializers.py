@@ -9,6 +9,12 @@ from rest_framework.relations import SlugRelatedField
 from reviews.models import Category, Genre, Title, Review, Comment
 
 
+class CategorySerializer(serializers.ModelSerializer):
+    class Meta:
+        fields = ('name', 'slug')
+        model = Category
+
+
 class GenreSerializer(serializers.ModelSerializer):
     class Meta:
         model = Genre
@@ -18,14 +24,14 @@ class GenreSerializer(serializers.ModelSerializer):
 class TitleSerializer(serializers.ModelSerializer):
     genre = GenreSerializer(
         many=True,
-        required=False)
-        #read_only=True)
-    """category = serializers.SlugRelatedField(
-        slug_field='slug',
-        read_only=True)"""
+        required=True)
+    category = CategorySerializer(
+        many=False,
+        required=True)
+
     class Meta:
-        fields = ('id', 'name', 'category', 'genre', 'year', 'description')
         model = Title
+        fields = ('name', 'year', 'rating', 'description', 'genre', 'category',)
 
     validators = (
         UniqueTogetherValidator(
@@ -41,10 +47,7 @@ class TitleSerializer(serializers.ModelSerializer):
         return data
 
 
-class CategorySerializer(serializers.ModelSerializer):
-    class Meta:
-        fields = ('id', 'name', 'slug')
-        model = Category
+
 
 
 
