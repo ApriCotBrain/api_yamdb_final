@@ -4,6 +4,7 @@ from rest_framework import mixins, filters, viewsets
 from rest_framework.pagination import LimitOffsetPagination
 from rest_framework.permissions import (
     IsAdminUser)
+from .permissions import IsAdmin, IsAdminOrReadOnly
 
 from api.serializers import (
     CategorySerializer,
@@ -20,7 +21,7 @@ class TitleViewSet(viewsets.ModelViewSet):
         Avg("reviews__score")
     ).order_by("name")
     serializer_class = TitleSerializer
-    permission_classes = (IsAdminUser, )
+    permission_classes = (IsAdminOrReadOnly, )
     # права на создание только у админа
     pagination_class = LimitOffsetPagination
     # нужен ли, по ТЗ не вижу такого требования
