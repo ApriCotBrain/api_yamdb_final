@@ -126,16 +126,6 @@ class Review(models.Model):
         verbose_name = 'Отзыв'
         verbose_name_plural = 'Отзывы'
 
-class Comments(models.Model):
-    review_id = models.ForeignKey(
-        Reviews,
-        constraints = [
-            models.UniqueConstraint(
-                fields=['title', 'author'],
-                name='unique_review'
-            ),
-        ]
-
 
 class Comment(models.Model):
     review = models.ForeignKey(
