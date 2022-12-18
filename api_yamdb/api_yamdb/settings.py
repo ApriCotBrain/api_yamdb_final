@@ -1,7 +1,7 @@
 from pathlib import Path
 from datetime import timedelta
 from django.conf.global_settings import DATETIME_INPUT_FORMATS
-
+import os
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
@@ -125,7 +125,7 @@ REST_FRAMEWORK = {
         'django_filters.rest_framework.DjangoFilterBackend',
     ],
     'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
-    'PAGE_SIZE': 10,
+    'PAGE_SIZE': 10 ,
 }
 
 SIMPLE_JWT = {
@@ -163,3 +163,6 @@ SIMPLE_JWT = {
 DATETIME_INPUT_FORMATS += ('%Y-%m-%dT%H:%M:%S.567z', )
 DATETIME_INPUT_FORMATS += ('%Y-%m-%dT%H:%M:%S.422z', )
 
+
+EMAIL_BACKEND = 'django.core.mail.backends.filebased.EmailBackend'
+EMAIL_FILE_PATH = os.path.join(BASE_DIR, 'sent_emails')
