@@ -5,16 +5,22 @@ from rest_framework.pagination import LimitOffsetPagination
 from rest_framework.permissions import (
     IsAuthenticatedOrReadOnly, IsAuthenticated)
 from .permissions import IsAdmin, IsAdminOrReadOnly, HasRoleOrReadOnly
-from rest_framework import mixins
 
 from api.serializers import (
     CategorySerializer,
     GenreSerializer,
     TitleSerializer,
     ReviewSerializer,
-    CommentSerializer
+    CommentSerializer,
+    UserSerializer
 )
 from reviews.models import Genre, Category, Title, Review
+from users.models import User
+
+
+class UserViewSet(viewsets.ModelViewSet):
+    queryset = User.objects.all()
+    serializer_class = UserSerializer
 
 
 class TitleViewSet(viewsets.ModelViewSet):

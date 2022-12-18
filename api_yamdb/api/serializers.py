@@ -7,6 +7,13 @@ from rest_framework.validators import UniqueTogetherValidator
 from rest_framework.relations import SlugRelatedField
 
 from reviews.models import Category, Genre, Title, Review, Comment
+from users.models import User
+
+
+class UserSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = User
+        fields = ('username', 'email', 'bio', 'role', 'first_name', 'last_name')
 
 
 class CategorySerializer(serializers.ModelSerializer):
