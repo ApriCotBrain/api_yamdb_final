@@ -12,11 +12,13 @@ from django.core.mail import EmailMessage
 from rest_framework.decorators import action, api_view, permission_classes
 
 from .permissions import IsAdmin, IsAdminOrReadOnly, HasRoleOrReadOnly
+import django_filters.rest_framework
 
 from api.serializers import (
     CategorySerializer,
     GenreSerializer,
-    TitleSerializer,
+    CreateTitleSerializer,
+    ShowTitleSerializer,
     ReviewSerializer,
     CommentSerializer,
     UserSerializer,
@@ -26,6 +28,7 @@ from api.serializers import (
 )
 from reviews.models import Genre, Category, Title, Review
 from users.models import User
+from api.filters import TitleFilter
 
 
 class UserViewSet(viewsets.ModelViewSet):
@@ -103,22 +106,27 @@ class UserRegAPIView(APIView):
 
 class TitleViewSet(viewsets.ModelViewSet):
     queryset = Title.objects.all().annotate(
-        Avg("reviews__score")
+        rating=Avg("reviews__score")
     ).order_by("name")
-    serializer_class = TitleSerializer
+    serializer_class = ShowTitleSerializer
     permission_classes = (IsAdminOrReadOnly, )
-    # права на создание только у админа
     pagination_class = LimitOffsetPagination
-    # нужен ли, по ТЗ не вижу такого требования
-    filter_backends = (filters.SearchFilter,)
+    filter_backends = [django_filters.rest_framework.DjangoFilterBackend]
+    #filterset_class = (TitleFilter,)
+    #filterset_class_fields = ('slug',)
     search_fields = ('name', 'category', 'genre', 'year')
+    #filter_fields = ('slug',)
+
+    def get_serializer_class(self):
+        if self.request.method in ('POST', 'PATCH', 'PUT'):
+            return CreateTitleSerializer
+        return ShowTitleSerializer
 
 
 class CategoryViewSet(viewsets.ModelViewSet):
     queryset = Category.objects.all()
     serializer_class = CategorySerializer
     permission_classes = (IsAdminOrReadOnly,)
-    # права на создание только у админа
     filter_backends = (filters.SearchFilter,)
     search_fields = ('name', )
 
@@ -126,13 +134,15 @@ class CategoryViewSet(viewsets.ModelViewSet):
 class GenreViewSet(viewsets.ModelViewSet):
     queryset = Genre.objects.all()
     serializer_class = GenreSerializer
-    #permission_classes = (IsAdminOrReadOnly,)
-    # права на создание только у админа
+    permission_classes = (IsAdminOrReadOnly,)
     filter_backends = (filters.SearchFilter,)
-    search_fields = ('name',)
+    filter_backends = [django_filters.rest_framework.DjangoFilterBackend]
+    search_fields = ('name', )
+    lookup_field = 'slug'
 
     def delete(self, request, *args, **kwargs):
         return self.destroy(request, *args, **kwargs)
+
 
 class ReviewViewSet(viewsets.ModelViewSet):
     serializer_class = ReviewSerializer

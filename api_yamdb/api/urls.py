@@ -1,5 +1,9 @@
 from django.urls import include, path
 from rest_framework.routers import DefaultRouter
+from rest_framework_simplejwt.views import (
+    TokenObtainPairView,
+    TokenRefreshView,
+)
 
 from api.views import (CategoryViewSet, GenreViewSet,
                        TitleViewSet, CommentViewSet, ReviewViewSet, UserViewSet, GetTokenAPIView, UserRegAPIView)
@@ -25,5 +29,4 @@ urlpatterns = [
     path(
         'v1/auth/signup/', UserRegAPIView.as_view(), name='signup'
     ),
-
 ]

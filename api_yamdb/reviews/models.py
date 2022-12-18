@@ -26,7 +26,7 @@ class Genre(models.Model):
     slug = models.SlugField(
         max_length=50,
         unique=True,
-        verbose_name='slug'
+        verbose_name='slug',
     )
 
     class Meta:
@@ -63,11 +63,6 @@ class Title(models.Model):
         blank=True,
         null=True,
         verbose_name='Год произведения'
-    )
-    rating = models.IntegerField(
-        verbose_name='Рейтинг',
-        null=True,
-        default=None
     )
 
     class Meta:
@@ -123,6 +118,13 @@ class Review(models.Model):
         ordering = ["-pub_date"]
         verbose_name = 'Отзыв'
         verbose_name_plural = 'Отзывы'
+
+        constraints = [
+            models.UniqueConstraint(
+                fields=['title', 'author'],
+                name='unique_review'
+            ),
+        ]
 
 
 class Comment(models.Model):
