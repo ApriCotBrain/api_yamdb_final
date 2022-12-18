@@ -5,6 +5,7 @@ from rest_framework.pagination import LimitOffsetPagination
 from rest_framework.permissions import (
     IsAuthenticatedOrReadOnly, IsAuthenticated)
 from .permissions import IsAdmin, IsAdminOrReadOnly, HasRoleOrReadOnly
+import django_filters.rest_framework
 
 from api.serializers import (
     CategorySerializer,
@@ -17,6 +18,7 @@ from api.serializers import (
 )
 from reviews.models import Genre, Category, Title, Review
 from users.models import User
+from api.filters import TitleFilter
 
 
 class UserViewSet(viewsets.ModelViewSet):
@@ -25,14 +27,17 @@ class UserViewSet(viewsets.ModelViewSet):
 
 
 class TitleViewSet(viewsets.ModelViewSet):
-    queryset = Title.objects.all()
-    """.annotate(
-        Avg("reviews__score")
-    ).order_by("name")"""
+    queryset = Title.objects.all().annotate(
+        rating=Avg("reviews__score")
+    ).order_by("name")
+    serializer_class = ShowTitleSerializer
     permission_classes = (IsAdminOrReadOnly, )
     pagination_class = LimitOffsetPagination
-    filter_backends = (filters.SearchFilter,)
-    filter_fields = ('name', 'category', 'genre', 'year')
+    filter_backends = [django_filters.rest_framework.DjangoFilterBackend]
+    #filterset_class = (TitleFilter,)
+    #filterset_class_fields = ('slug',)
+    search_fields = ('name', 'category', 'genre', 'year')
+    #filter_fields = ('slug',)
 
     def get_serializer_class(self):
         if self.request.method in ('POST', 'PATCH', 'PUT'):
@@ -53,7 +58,9 @@ class GenreViewSet(viewsets.ModelViewSet):
     serializer_class = GenreSerializer
     permission_classes = (IsAdminOrReadOnly,)
     filter_backends = (filters.SearchFilter,)
-    search_fields = ('name',)
+    filter_backends = [django_filters.rest_framework.DjangoFilterBackend]
+    search_fields = ('name', )
+    lookup_field = 'slug'
 
     def delete(self, request, *args, **kwargs):
         return self.destroy(request, *args, **kwargs)

@@ -42,19 +42,23 @@ class CreateTitleSerializer(serializers.ModelSerializer):
         model = Title
         fields = ('id', 'name', 'year', 'description', 'genre', 'category',)
 
-    """def validate(self, data):
-        if self.data['year'] > datetime.now().year:
-            raise serializers.ValidationError('Такой год еще не наступил!')
-        return data"""
+    def year_validate(self, value):
+        current_year = datetime.date.today().year
+        if value > current_year:
+            raise serializers.ValidationError(
+                'Год выпуска не может быть больше текущего'
+            )
+        return value
 
 
 class ShowTitleSerializer(serializers.ModelSerializer):
     category = CategorySerializer(read_only=True)
     genre = GenreSerializer(read_only=True, many=True)
+    rating = serializers.IntegerField(read_only=True)
 
     class Meta:
         model = Title
-        fields = ('id', 'name', 'year', 'description', 'genre', 'category')
+        fields = '__all__'
 
 
 class ReviewSerializer(serializers.ModelSerializer):
