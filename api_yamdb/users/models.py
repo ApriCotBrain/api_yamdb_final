@@ -33,7 +33,10 @@ class User(AbstractUser):
         default=USER,
         blank=False    # Возможно тут True, надо проверить с api
     )
-    # conf_code?
+    confirmation_code = models.CharField(
+        max_length=100,
+        blank=True
+    )
 
     class Meta:
         verbose_name = 'Пользователь'
