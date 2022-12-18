@@ -65,11 +65,11 @@ class Title(models.Model):
         null=True,
         verbose_name='Год произведения'
     )
-    rating = models.IntegerField(
+    """rating = models.IntegerField(
         verbose_name='Рейтинг',
         null=True,
         default=None
-    )
+    )"""
 
     class Meta:
         verbose_name = 'Произведение'
