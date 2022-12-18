@@ -60,6 +60,7 @@ class UserViewSet(viewsets.ModelViewSet):
 
 class GetTokenAPIView(APIView):
     permission_classes = (AllowAny,)
+
     def post(self, request):
         serializer = GetTokenSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
@@ -74,6 +75,7 @@ class GetTokenAPIView(APIView):
             {'confirmation_code': 'Предоставлен неверный код подтверждения'},
             status=status.HTTP_400_BAD_REQUEST
         )
+
 
 class UserRegAPIView(APIView):
     permission_classes = (AllowAny,)
@@ -126,25 +128,29 @@ class TitleViewSet(viewsets.ModelViewSet):
         return ShowTitleSerializer
 
 
-class CategoryViewSet(viewsets.ModelViewSet):
+class CategoryViewSet(mixins.CreateModelMixin,
+                      mixins.DestroyModelMixin,
+                      mixins.ListModelMixin,
+                      viewsets.GenericViewSet,):
+    lookup_field = 'slug'
     queryset = Category.objects.all()
     serializer_class = CategorySerializer
     permission_classes = (IsAdminOrReadOnly,)
     filter_backends = (filters.SearchFilter,)
-    search_fields = ('name', )
+    search_fields = ('name',)
+    ordering = ('name',)
 
 
-class GenreViewSet(viewsets.ModelViewSet):
+class GenreViewSet(mixins.CreateModelMixin,
+                   mixins.DestroyModelMixin,
+                   mixins.ListModelMixin,
+                   viewsets.GenericViewSet,):
     queryset = Genre.objects.all()
     serializer_class = GenreSerializer
     permission_classes = (IsAdminOrReadOnly,)
     filter_backends = (filters.SearchFilter,)
-    filterset_fields = ('name',)
     search_fields = ('name',)
-    #lookup_field = 'slug'
-
-    def delete(self, request, *args, **kwargs):
-        return self.destroy(request, *args, **kwargs)
+    lookup_field = 'slug'
 
 
 class ReviewViewSet(viewsets.ModelViewSet):
