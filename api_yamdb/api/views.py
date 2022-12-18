@@ -12,9 +12,16 @@ from api.serializers import (
     GenreSerializer,
     TitleSerializer,
     ReviewSerializer,
-    CommentSerializer
+    CommentSerializer,
+    UserSerializer
 )
 from reviews.models import Genre, Category, Title, Review
+from users.models import User
+
+
+class UserViewSet(viewsets.ModelViewSet):
+    queryset = User.objects.all()
+    serializer_class = UserSerializer
 
 
 class TitleViewSet(viewsets.ModelViewSet):
