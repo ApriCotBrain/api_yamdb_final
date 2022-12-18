@@ -10,7 +10,7 @@ from rest_framework_simplejwt.tokens import RefreshToken
 from django.contrib.auth.tokens import default_token_generator
 from django.core.mail import EmailMessage
 from rest_framework.decorators import action, api_view, permission_classes
-
+from rest_framework.filters import SearchFilter
 from .permissions import IsAdmin, IsAdminOrReadOnly, HasRoleOrReadOnly
 import django_filters.rest_framework
 
@@ -34,6 +34,10 @@ from api.filters import TitleFilter
 class UserViewSet(viewsets.ModelViewSet):
     queryset = User.objects.all()
     serializer_class = UserSerializer
+    permission_classes = (IsAuthenticated, IsAdmin,)
+    lookup_field = 'username'
+    filter_backends = (SearchFilter,)
+    search_fields = ('username',)
 
     @action(
         detail=False, methods=['GET', 'PATCH'], url_path='me',
@@ -75,7 +79,7 @@ class UserRegAPIView(APIView):
     permission_classes = (AllowAny,)
 
     def post(self, request):
-        serializer = UserSerializer(data=request.data)
+        serializer = UserRegSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         user = serializer.save()
         confirmation_code = default_token_generator.make_token(user)
@@ -111,11 +115,10 @@ class TitleViewSet(viewsets.ModelViewSet):
     serializer_class = ShowTitleSerializer
     permission_classes = (IsAdminOrReadOnly, )
     pagination_class = LimitOffsetPagination
-    filter_backends = [django_filters.rest_framework.DjangoFilterBackend]
-    #filterset_class = (TitleFilter,)
-    #filterset_class_fields = ('slug',)
+    filter_backends = (django_filters.rest_framework.DjangoFilterBackend,)
+    filterset_class = TitleFilter
+    filterset_fields = ('genre__slug', 'name')
     search_fields = ('name', 'category', 'genre', 'year')
-    #filter_fields = ('slug',)
 
     def get_serializer_class(self):
         if self.request.method in ('POST', 'PATCH', 'PUT'):
@@ -136,9 +139,9 @@ class GenreViewSet(viewsets.ModelViewSet):
     serializer_class = GenreSerializer
     permission_classes = (IsAdminOrReadOnly,)
     filter_backends = (filters.SearchFilter,)
-    filter_backends = [django_filters.rest_framework.DjangoFilterBackend]
-    search_fields = ('name', )
-    lookup_field = 'slug'
+    filterset_fields = ('name',)
+    search_fields = ('name',)
+    #lookup_field = 'slug'
 
     def delete(self, request, *args, **kwargs):
         return self.destroy(request, *args, **kwargs)

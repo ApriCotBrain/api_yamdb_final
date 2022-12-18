@@ -1,9 +1,15 @@
+import re
 from datetime import datetime
 import datetime
 
+from django.contrib.auth.validators import UnicodeUsernameValidator
+from django.core.validators import validate_email
+
+from django.core.validators import RegexValidator
 from django.shortcuts import get_object_or_404
 
 from rest_framework import serializers
+from django.core.exceptions import ValidationError
 from rest_framework.validators import UniqueTogetherValidator
 from rest_framework.relations import SlugRelatedField
 
@@ -35,18 +41,50 @@ class UserMeSerializer(serializers.ModelSerializer):
         )
         read_only_fields = ('role',)
 
+class NotAdminSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = User
+        fields = (
+            'username', 'email', 'first_name',
+            'last_name', 'bio', 'role')
+        read_only_fields = ('role',)
+
 class UserRegSerializer(serializers.ModelSerializer):
-    username = serializers.CharField(required=True)
-    email = serializers.CharField(required=True)
+    email = serializers.CharField(required=True, max_length=254)
+    username = serializers.CharField(required=True, max_length=150, validators=[UnicodeUsernameValidator])
+
 
     class Meta:
         model = User
         fields = ['username', 'email']
 
     def validate_username(self, value):
-        if value != 'me':
-            return value
-        return serializers.ValidationError('Данное имя недоступно!')
+        if re.search(r'^[a-zA-Z][a-zA-Z0-9-_\.]{1,20}$', value) is None:
+            raise ValidationError(
+                (f'Не допустимые символы <{value}> в нике.'),
+                params={'value': value},
+            )
+        if value.lower() == 'me':
+            raise ValidationError(
+                ('Недопустимое имя пользователя!')
+            )
+        if User.objects.filter(username__iexact=value).exists():
+            raise serializers.ValidationError(
+                'Пользователь с таким именем уже существует.'
+            )
+        return value
+
+    def validate_email(self, value):
+        validate_email(value)
+
+
+        if User.objects.filter(email__iexact=value).exists():
+            raise serializers.ValidationError(
+                'Пользователь с таким email уже существует.'
+            )
+        return value
+
+
 
 
 class CategorySerializer(serializers.ModelSerializer):
