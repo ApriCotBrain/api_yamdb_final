@@ -9,7 +9,8 @@ from .permissions import IsAdmin, IsAdminOrReadOnly, HasRoleOrReadOnly
 from api.serializers import (
     CategorySerializer,
     GenreSerializer,
-    TitleSerializer,
+    CreateTitleSerializer,
+    ShowTitleSerializer,
     ReviewSerializer,
     CommentSerializer,
     UserSerializer
@@ -24,23 +25,25 @@ class UserViewSet(viewsets.ModelViewSet):
 
 
 class TitleViewSet(viewsets.ModelViewSet):
-    queryset = Title.objects.all().annotate(
+    queryset = Title.objects.all()
+    """.annotate(
         Avg("reviews__score")
-    ).order_by("name")
-    serializer_class = TitleSerializer
+    ).order_by("name")"""
     permission_classes = (IsAdminOrReadOnly, )
-    # права на создание только у админа
     pagination_class = LimitOffsetPagination
-    # нужен ли, по ТЗ не вижу такого требования
     filter_backends = (filters.SearchFilter,)
-    search_fields = ('name', 'category', 'genre', 'year')
+    filter_fields = ('name', 'category', 'genre', 'year')
+
+    def get_serializer_class(self):
+        if self.request.method in ('POST', 'PATCH', 'PUT'):
+            return CreateTitleSerializer
+        return ShowTitleSerializer
 
 
 class CategoryViewSet(viewsets.ModelViewSet):
     queryset = Category.objects.all()
     serializer_class = CategorySerializer
     permission_classes = (IsAdminOrReadOnly,)
-    # права на создание только у админа
     filter_backends = (filters.SearchFilter,)
     search_fields = ('name', )
 
@@ -48,13 +51,13 @@ class CategoryViewSet(viewsets.ModelViewSet):
 class GenreViewSet(viewsets.ModelViewSet):
     queryset = Genre.objects.all()
     serializer_class = GenreSerializer
-    #permission_classes = (IsAdminOrReadOnly,)
-    # права на создание только у админа
+    permission_classes = (IsAdminOrReadOnly,)
     filter_backends = (filters.SearchFilter,)
     search_fields = ('name',)
 
     def delete(self, request, *args, **kwargs):
         return self.destroy(request, *args, **kwargs)
+
 
 class ReviewViewSet(viewsets.ModelViewSet):
     serializer_class = ReviewSerializer

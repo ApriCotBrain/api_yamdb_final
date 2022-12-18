@@ -1,4 +1,5 @@
 from datetime import datetime
+import datetime
 
 from django.shortcuts import get_object_or_404
 
@@ -28,36 +29,32 @@ class GenreSerializer(serializers.ModelSerializer):
         fields = ('name', 'slug')
 
 
-class TitleSerializer(serializers.ModelSerializer):
-    genre = GenreSerializer(
-        many=True,
-        required=True)
-    category = CategorySerializer(
-        many=False,
-        required=True)
+class CreateTitleSerializer(serializers.ModelSerializer):
+    category = serializers.SlugRelatedField(
+        slug_field='slug',
+        queryset=Category.objects.all())
+    genre = serializers.SlugRelatedField(
+        slug_field='slug',
+        queryset=Genre.objects.all(),
+        many=True)
 
     class Meta:
         model = Title
-        fields = ('name', 'year', 'rating', 'description', 'genre', 'category',)
+        fields = ('id', 'name', 'year', 'description', 'genre', 'category',)
 
-    validators = (
-        UniqueTogetherValidator(
-            queryset=Title.objects.all(),
-            fields=('name', 'category'),
-            message='Произведение уже привязано к категории!'
-        ),
-    )
-
-    def validate(self, data):
+    """def validate(self, data):
         if self.data['year'] > datetime.now().year:
             raise serializers.ValidationError('Такой год еще не наступил!')
-        return data
+        return data"""
 
 
+class ShowTitleSerializer(serializers.ModelSerializer):
+    category = CategorySerializer(read_only=True)
+    genre = GenreSerializer(read_only=True, many=True)
 
-
-
-
+    class Meta:
+        model = Title
+        fields = ('id', 'name', 'year', 'description', 'genre', 'category')
 
 
 class ReviewSerializer(serializers.ModelSerializer):
