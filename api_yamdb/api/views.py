@@ -5,7 +5,6 @@ from rest_framework.pagination import LimitOffsetPagination
 from rest_framework.permissions import (
     IsAuthenticatedOrReadOnly, IsAuthenticated)
 from .permissions import IsAdmin, IsAdminOrReadOnly, HasRoleOrReadOnly
-from rest_framework import mixins
 
 from api.serializers import (
     CategorySerializer,
