@@ -37,6 +37,8 @@ class GetTokenSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
         fields = ['username', 'confirmation_code']
+
+
 class UserMeSerializer(serializers.ModelSerializer):
     role = serializers.StringRelatedField(read_only=True)
 
@@ -57,7 +59,6 @@ class UserMeSerializer(serializers.ModelSerializer):
         read_only_fields = ('role',)
 
 
-
 class NotAdminSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
@@ -66,10 +67,10 @@ class NotAdminSerializer(serializers.ModelSerializer):
             'last_name', 'bio', 'role')
         read_only_fields = ('role',)
 
+
 class UserRegSerializer(serializers.ModelSerializer):
     email = serializers.CharField(required=True, max_length=254)
     username = serializers.CharField(required=True, max_length=150, validators=[UnicodeUsernameValidator])
-
 
     class Meta:
         model = User
@@ -94,14 +95,11 @@ class UserRegSerializer(serializers.ModelSerializer):
     def validate_email(self, value):
         validate_email(value)
 
-
         if User.objects.filter(email__iexact=value).exists():
             raise serializers.ValidationError(
                 'Пользователь с таким email уже существует.'
             )
         return value
-
-
 
 
 class CategorySerializer(serializers.ModelSerializer):
