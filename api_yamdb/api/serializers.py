@@ -18,9 +18,16 @@ from users.models import User
 
 
 class UserSerializer(serializers.ModelSerializer):
+    def validate_username(self, value):
+        if re.search(r'^[a-zA-Z][a-zA-Z0-9-_\.]{1,20}$', value) is None:
+            raise ValidationError(
+                (f'Не допустимые символы <{value}> в нике.'),
+                params={'value': value},
+            )
+        return value
     class Meta:
         model = User
-        fields = ('username', 'email', 'first_name', 'last_name', 'bio', 'role',)
+        fields = ('username', 'email', 'first_name', 'last_name', 'bio', 'role')
 
 
 class GetTokenSerializer(serializers.ModelSerializer):
@@ -34,6 +41,14 @@ class GetTokenSerializer(serializers.ModelSerializer):
 
 class UserMeSerializer(serializers.ModelSerializer):
     role = serializers.StringRelatedField(read_only=True)
+
+    def validate_username(self, value):
+        if re.search(r'^[a-zA-Z][a-zA-Z0-9-_\.]{1,20}$', value) is None:
+            raise ValidationError(
+                (f'Не допустимые символы <{value}> в нике.'),
+                params={'value': value},
+            )
+        return value
 
     class Meta:
         model = User

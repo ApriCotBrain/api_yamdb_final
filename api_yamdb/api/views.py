@@ -44,8 +44,10 @@ class UserViewSet(viewsets.ModelViewSet):
         permission_classes=[IsAuthenticated]
     )
     def me(self, request):
+        serializer = UserSerializer
         if request.method == 'GET':
             serializer = self.get_serializer(request.user)
+            print(serializer)
             return Response(serializer.data)
         if request.method == 'PATCH':
             serializer = UserMeSerializer(
