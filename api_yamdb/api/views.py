@@ -1,34 +1,28 @@
-from django.shortcuts import get_object_or_404
-from django.db.models import Avg
-from rest_framework.response import Response
-from rest_framework import mixins, filters, viewsets, generics, status
-from rest_framework.pagination import LimitOffsetPagination
-from rest_framework.permissions import (
-    IsAuthenticatedOrReadOnly, IsAuthenticated, AllowAny)
-from rest_framework.views import APIView
-from rest_framework_simplejwt.tokens import RefreshToken
+import django_filters.rest_framework
 from django.contrib.auth.tokens import default_token_generator
 from django.core.mail import EmailMessage
-from rest_framework.decorators import action, api_view, permission_classes
+from django.db.models import Avg
+from django.shortcuts import get_object_or_404
+from rest_framework import filters, mixins, status, viewsets
+from rest_framework.decorators import action
 from rest_framework.filters import SearchFilter
-from .permissions import IsAdmin, IsAdminOrReadOnly, HasRoleOrReadOnly
-import django_filters.rest_framework
+from rest_framework.pagination import LimitOffsetPagination
+from rest_framework.permissions import (AllowAny, IsAuthenticated,
+                                        IsAuthenticatedOrReadOnly)
+from rest_framework.response import Response
+from rest_framework.views import APIView
+from rest_framework_simplejwt.tokens import RefreshToken
 
-from api.serializers import (
-    CategorySerializer,
-    GenreSerializer,
-    CreateTitleSerializer,
-    ShowTitleSerializer,
-    ReviewSerializer,
-    CommentSerializer,
-    UserSerializer,
-    GetTokenSerializer,
-    UserRegSerializer,
-    UserMeSerializer
-)
-from reviews.models import Genre, Category, Title, Review
+from reviews.models import Category, Genre, Review, Title
 from users.models import User
 from api.filters import TitleFilter
+from api.serializers import (CategorySerializer, CommentSerializer,
+                             CreateTitleSerializer, GenreSerializer,
+                             GetTokenSerializer, ReviewSerializer,
+                             ShowTitleSerializer, UserMeSerializer,
+                             UserRegSerializer, UserSerializer)
+
+from .permissions import HasRoleOrReadOnly, IsAdmin, IsAdminOrReadOnly
 
 
 class UserViewSet(viewsets.ModelViewSet):
@@ -38,13 +32,13 @@ class UserViewSet(viewsets.ModelViewSet):
     lookup_field = 'username'
     filter_backends = (SearchFilter,)
     search_fields = ('username',)
+    http_method_names = ['get', 'post', 'delete', 'patch']
 
     @action(
-        detail=False, methods=['GET', 'PATCH'], url_path='me',
-        permission_classes=[IsAuthenticated]
+        methods=['GET', 'PATCH'], url_path='me', detail=False,
+        permission_classes=(IsAuthenticated,)
     )
     def me(self, request):
-        serializer = UserSerializer
         if request.method == 'GET':
             serializer = self.get_serializer(request.user)
             print(serializer)
@@ -83,27 +77,38 @@ class UserRegAPIView(APIView):
     permission_classes = (AllowAny,)
 
     def post(self, request):
+        email = request.data.get('email')
+        username = request.data.get('username')
+        if User.objects.filter(email=email).exists():
+            if not User.objects.filter(username=username).exists():
+                return Response(status=status.HTTP_400_BAD_REQUEST)
+        if User.objects.filter(username=username).exists():
+            if not User.objects.filter(email=email).exists():
+                return Response(status=status.HTTP_400_BAD_REQUEST)
+        if (User.objects.filter(username=username).exists()
+           or User.objects.filter(email=email).exists()):
+            serializer = UserRegSerializer(data=request.data)
+            return Response(serializer.initial_data, status=status.HTTP_200_OK)
         serializer = UserRegSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         user = serializer.save()
         confirmation_code = default_token_generator.make_token(user)
         user.confirmation_code = confirmation_code
         user.save()
-        email_info = (
-            f'Здравствуйте {user.username}'
-            f'\n Ваш проверочный код для завершения регистрации:'
+        email_text = (
+            'Ваш код для завершения регистрации:'
             f'{confirmation_code}'
         )
         data = {
-            'email_info': email_info,
+            'email_info': email_text,
             'to_email': user.email,
-            'mail_subject': 'Код подтверждения для регистрации на сайте YaMDB'
+            'mail_subject': 'Код подтверждения YaMDB'
         }
-        self.__send_email(data)
+        self.send_email(data)
         return Response(serializer.data, status=status.HTTP_200_OK)
 
     @staticmethod
-    def __send_email(data):
+    def send_email(data):
         email = EmailMessage(
             subject=data['mail_subject'],
             body=data['email_info'],

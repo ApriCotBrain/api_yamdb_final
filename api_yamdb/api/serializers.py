@@ -1,19 +1,12 @@
+import datetime
 import re
 from datetime import datetime
-import datetime
-
-from django.contrib.auth.validators import UnicodeUsernameValidator
-from django.core.validators import validate_email
-
-from django.core.validators import RegexValidator
-from django.shortcuts import get_object_or_404
-
-from rest_framework import serializers
 from django.core.exceptions import ValidationError
-from rest_framework.validators import UniqueTogetherValidator
+from django.shortcuts import get_object_or_404
+from rest_framework import serializers
 from rest_framework.relations import SlugRelatedField
 
-from reviews.models import Category, Genre, Title, Review, Comment
+from reviews.models import Category, Comment, Genre, Review, Title
 from users.models import User
 
 
@@ -21,13 +14,15 @@ class UserSerializer(serializers.ModelSerializer):
     def validate_username(self, value):
         if re.search(r'^[a-zA-Z][a-zA-Z0-9-_\.]{1,20}$', value) is None:
             raise ValidationError(
-                (f'Не допустимые символы <{value}> в нике.'),
+                (f'Недопустимые символы {value} в нике.'),
                 params={'value': value},
             )
         return value
+
     class Meta:
         model = User
-        fields = ('username', 'email', 'first_name', 'last_name', 'bio', 'role')
+        fields = ('username', 'email',
+                  'first_name', 'last_name', 'bio', 'role')
 
 
 class GetTokenSerializer(serializers.ModelSerializer):
@@ -36,7 +31,7 @@ class GetTokenSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = User
-        fields = ['username', 'confirmation_code']
+        fields = ('username', 'confirmation_code')
 
 
 class UserMeSerializer(serializers.ModelSerializer):
@@ -45,59 +40,33 @@ class UserMeSerializer(serializers.ModelSerializer):
     def validate_username(self, value):
         if re.search(r'^[a-zA-Z][a-zA-Z0-9-_\.]{1,20}$', value) is None:
             raise ValidationError(
-                (f'Не допустимые символы <{value}> в нике.'),
+                (f'Недопустимые символы {value} в нике.'),
                 params={'value': value},
             )
         return value
 
     class Meta:
         model = User
-        fields = (
-            'username', 'email', 'bio', 'role',
-            'first_name', 'last_name'
-        )
-        read_only_fields = ('role',)
-
-
-class NotAdminSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = User
-        fields = (
-            'username', 'email', 'first_name',
-            'last_name', 'bio', 'role')
+        fields = ('username', 'email', 'bio', 'role',
+                  'first_name', 'last_name')
         read_only_fields = ('role',)
 
 
 class UserRegSerializer(serializers.ModelSerializer):
-    email = serializers.CharField(required=True, max_length=254)
-    username = serializers.CharField(required=True, max_length=150, validators=[UnicodeUsernameValidator])
 
     class Meta:
         model = User
-        fields = ['username', 'email']
+        fields = ('username', 'email')
 
     def validate_username(self, value):
         if re.search(r'^[a-zA-Z][a-zA-Z0-9-_\.]{1,20}$', value) is None:
             raise ValidationError(
-                (f'Не допустимые символы <{value}> в нике.'),
+                (f'Не допустимые символы {value} в нике.'),
                 params={'value': value},
             )
         if value.lower() == 'me':
             raise ValidationError(
                 ('Недопустимое имя пользователя!')
-            )
-        if User.objects.filter(username__iexact=value).exists():
-            raise serializers.ValidationError(
-                'Пользователь с таким именем уже существует.'
-            )
-        return value
-
-    def validate_email(self, value):
-        validate_email(value)
-
-        if User.objects.filter(email__iexact=value).exists():
-            raise serializers.ValidationError(
-                'Пользователь с таким email уже существует.'
             )
         return value
 
