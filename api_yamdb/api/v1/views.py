@@ -16,8 +16,8 @@ from rest_framework_simplejwt.tokens import RefreshToken
 
 from reviews.models import Category, Genre, Review, Title
 from users.models import User
-from api.filters import TitleFilter
-from api.serializers import (CategorySerializer, CommentSerializer,
+from .filters import TitleFilter
+from .serializers import (CategorySerializer, CommentSerializer,
                              CreateTitleSerializer, GenreSerializer,
                              GetTokenSerializer, ReviewSerializer,
                              ShowTitleSerializer, UserMeSerializer,
