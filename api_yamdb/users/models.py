@@ -11,21 +11,15 @@ class User(AbstractUser):
         (MODERATOR, 'moderator'),
         (USER, 'user'),
     ]
-
     username = models.CharField(
         max_length=150,
         unique=True,
-        db_index=True,
-        blank=False,
-        null=False
+        db_index=True
     )
     email = models.EmailField(
         max_length=254,
-        unique=True,
-        blank=False,
-        null=False
+        unique=True
     )
-
     bio = models.TextField(
         'О пользователе',
         blank=True,
@@ -35,10 +29,10 @@ class User(AbstractUser):
         'Роль пользователя',
         max_length=20,
         choices=USER_ROLES,
-        default=USER,
-        blank=False    # Возможно тут True, надо проверить с api
+        default=USER
     )
     confirmation_code = models.CharField(
+        'Код подтверждения',
         max_length=100,
         blank=True
     )
@@ -49,12 +43,6 @@ class User(AbstractUser):
 
     def __str__(self):
         return self.username
-
-    """
-    @property
-    def get_role(self):
-        return self.role
-    """
 
     @property
     def is_user(self):
