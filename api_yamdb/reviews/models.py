@@ -1,6 +1,7 @@
 from django.core.validators import MaxValueValidator, MinValueValidator
 from django.db import models
 from users.models import User
+import datetime
 
 
 class Category(models.Model):
@@ -57,10 +58,14 @@ class Title(models.Model):
         through='GenreTitle',
         verbose_name='Жанр произведения'
     )
-    year = models.IntegerField(
+    year = models.PositiveIntegerField(
         blank=True,
         null=True,
-        verbose_name='Год произведения'
+        verbose_name='Год произведения',
+        db_index=True,
+        validators=[MaxValueValidator(
+            datetime.date.today().year,
+            'Год выпуска не может быть больше текущего')]
     )
 
     class Meta:
