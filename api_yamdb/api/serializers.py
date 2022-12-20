@@ -53,7 +53,6 @@ class UserMeSerializer(serializers.ModelSerializer):
 
 
 class UserRegSerializer(serializers.ModelSerializer):
-
     class Meta:
         model = User
         fields = ('username', 'email')
@@ -69,6 +68,13 @@ class UserRegSerializer(serializers.ModelSerializer):
                 ('Недопустимое имя пользователя!')
             )
         return value
+
+    """def validate_exist(self, data):
+        username = data.get('username')
+        email = data.get('email')
+        if (User.objects.filter(username=username).exists()
+            or User.objects.filter(email=email).exists()):
+            return data"""
 
 
 class CategorySerializer(serializers.ModelSerializer):

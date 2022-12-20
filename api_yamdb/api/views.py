@@ -1,4 +1,5 @@
 import django_filters.rest_framework
+from django.conf import settings
 from django.contrib.auth.tokens import default_token_generator
 from django.core.mail import EmailMessage
 from django.db.models import Avg
@@ -41,7 +42,6 @@ class UserViewSet(viewsets.ModelViewSet):
     def me(self, request):
         if request.method == 'GET':
             serializer = self.get_serializer(request.user)
-            print(serializer)
             return Response(serializer.data)
         if request.method == 'PATCH':
             serializer = UserMeSerializer(
@@ -91,12 +91,13 @@ class UserRegAPIView(APIView):
             return Response(serializer.initial_data, status=status.HTTP_200_OK)
         serializer = UserRegSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
-        user = serializer.save()
+        user, created = User.objects.get_or_create(
+            username=serializer.validated_data["username"],
+            email=serializer.validated_data["email"],
+        )
         confirmation_code = default_token_generator.make_token(user)
-        user.confirmation_code = confirmation_code
-        user.save()
         email_text = (
-            'Ваш код для завершения регистрации:'
+            'Ваш код для завершения регистрации: '
             f'{confirmation_code}'
         )
         data = {
@@ -112,6 +113,7 @@ class UserRegAPIView(APIView):
         email = EmailMessage(
             subject=data['mail_subject'],
             body=data['email_info'],
+            from_email=settings.EMAIL_FROM,
             to=[data['to_email']]
         )
         email.send()
