@@ -18,10 +18,10 @@ from reviews.models import Category, Genre, Review, Title
 from users.models import User
 from .filters import TitleFilter
 from .serializers import (CategorySerializer, CommentSerializer,
-                             CreateTitleSerializer, GenreSerializer,
-                             GetTokenSerializer, ReviewSerializer,
-                             ShowTitleSerializer, UserMeSerializer,
-                             UserRegSerializer, UserSerializer)
+                          CreateTitleSerializer, GenreSerializer,
+                          GetTokenSerializer, ReviewSerializer,
+                          ShowTitleSerializer, UserMeSerializer,
+                          UserRegSerializer, UserSerializer)
 
 from .permissions import HasRoleOrReadOnly, IsAdmin, IsAdminOrReadOnly
 
@@ -77,18 +77,6 @@ class UserRegAPIView(APIView):
     permission_classes = (AllowAny,)
 
     def post(self, request):
-        email = request.data.get('email')
-        username = request.data.get('username')
-        if User.objects.filter(email=email).exists():
-            if not User.objects.filter(username=username).exists():
-                return Response(status=status.HTTP_400_BAD_REQUEST)
-        if User.objects.filter(username=username).exists():
-            if not User.objects.filter(email=email).exists():
-                return Response(status=status.HTTP_400_BAD_REQUEST)
-        if (User.objects.filter(username=username).exists()
-           or User.objects.filter(email=email).exists()):
-            serializer = UserRegSerializer(data=request.data)
-            return Response(serializer.initial_data, status=status.HTTP_200_OK)
         serializer = UserRegSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         user, created = User.objects.get_or_create(

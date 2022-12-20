@@ -1,4 +1,3 @@
-import datetime
 import re
 from datetime import datetime
 from django.core.exceptions import ValidationError
@@ -52,11 +51,26 @@ class UserMeSerializer(serializers.ModelSerializer):
         read_only_fields = ('role',)
 
 
-class UserRegSerializer(serializers.ModelSerializer):
+class UserRegSerializer(serializers.Serializer):
+    email = serializers.EmailField(max_length=254, required=True)
+    username = serializers.CharField(max_length=150, required=True)
 
     class Meta:
         model = User
         fields = ('username', 'email')
+
+    def validate(self, data):
+        username = data['username']
+        email = data['email']
+        if User.objects.filter(username=username, email=email).exists():
+            return data
+        if User.objects.filter(email=email).exists():
+            if not User.objects.filter(username=username).exists():
+                raise serializers.ValidationError('Данный email занят!')
+        if User.objects.filter(username=username).exists():
+            if not User.objects.filter(email=email).exists():
+                raise serializers.ValidationError('Данный username занят!')
+        return data
 
     def validate_username(self, value):
         if re.search(r'^[a-zA-Z][a-zA-Z0-9-_\.]{1,20}$', value) is None:
