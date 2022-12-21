@@ -80,8 +80,8 @@ class UserRegAPIView(APIView):
         serializer = UserRegSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         user, created = User.objects.get_or_create(
-            username=serializer.validated_data["username"],
-            email=serializer.validated_data["email"],
+            username=serializer.validated_data['username'],
+            email=serializer.validated_data['email'],
         )
         confirmation_code = default_token_generator.make_token(user)
         email_text = (
