@@ -101,11 +101,11 @@ class Review(models.Model):
         on_delete=models.CASCADE,
         db_column='title_id',
     )
-    text = models.TextField("Текст", help_text="Отзыв")
+    text = models.TextField('Текст', help_text='Отзыв')
     author = models.ForeignKey(
         User,
         on_delete=models.CASCADE,
-        related_name="reviews",
+        related_name='reviews',
         verbose_name="Автор",
     )
     score = models.PositiveSmallIntegerField(
